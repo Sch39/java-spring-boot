@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TUS File Upload</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .upload-container {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 24px;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 20px 0;
+            max-width: 100%;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+
+        button {
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        progress {
+            width: 100%;
+            height: 24px;
+        }
+
+        #status {
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="upload-container">
+        <h2>Upload File dengan TUS</h2>
+
+        <input type="file" id="fileInput">
+
+        <div class="buttons">
+            <button id="uploadButton">Upload</button>
+            <button id="pauseButton" disabled>Pause</button>
+            <button id="resumeButton" disabled>Resume</button>
+        </div>
+
+        <progress id="progress" value="0" max="100"></progress>
+
+        <p id="percentage">0%</p>
+        <p id="status">Pilih file untuk memulai upload.</p>
+    </div>
+
+    <!-- Browser bundle tus-js-client -->
+    <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4/dist/tus.min.js"></script>
+
+    <!-- Logika upload -->
+    <script src="/js/upload.js"></script>
+</body>
+
+</html>
