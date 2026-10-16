@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Upload File Resumable</title>
+
+    <style>
+        :root {
+            --page-bg: #f3f6fb;
+            --surface: #ffffff;
+            --surface-subtle: #f8fafc;
+            --text: #172033;
+            --text-muted: #64748b;
+            --border: #dbe3ef;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-soft: #eff6ff;
+            --success: #15803d;
+            --success-soft: #f0fdf4;
+            --danger: #b91c1c;
+            --danger-soft: #fef2f2;
+            --warning: #a16207;
+            --warning-soft: #fefce8;
+            --focus: #93c5fd;
+            --shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text);
+            background: var(--page-bg);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        .page-shell {
+            display: grid;
+            min-height: 100vh;
+            place-items: center;
+            padding: 48px 20px;
+        }
+
+        .upload-card {
+            width: min(100%, 680px);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            padding: 32px 34px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 12px;
+            color: var(--primary);
+            font-size: 0.78rem;
+            font-weight: 750;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .eyebrow::before {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--primary);
+            content: "";
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.7rem, 5vw, 2.35rem);
+            line-height: 1.15;
+            letter-spacing: -0.035em;
+        }
+
+        .subtitle {
+            max-width: 55ch;
+            margin: 12px 0 0;
+            color: var(--text-muted);
+            line-height: 1.65;
+        }
+
+        .card-body {
+            display: grid;
+            gap: 24px;
+            padding: 30px 34px 34px;
+        }
+
+        .file-field {
+            display: grid;
+            gap: 10px;
+        }
+
+        .field-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .file-picker {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            align-items: center;
+            gap: 16px;
+            min-height: 92px;
+            padding: 18px;
+            border: 1px dashed #aebcd0;
+            border-radius: 16px;
+            background: var(--surface-subtle);
+            transition: border-color 160ms ease, background-color 160ms ease;
+        }
+
+        .file-picker:focus-within {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+            outline: 3px solid var(--focus);
+            outline-offset: 2px;
+        }
+
+        .file-icon {
+            display: grid;
+            width: 48px;
+            height: 48px;
+            place-items: center;
+            border-radius: 14px;
+            color: var(--primary);
+            background: var(--primary-soft);
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .file-control {
+            min-width: 0;
+        }
+
+        #fileInput {
+            width: 100%;
+            color: var(--text-muted);
+        }
+
+        #fileInput::file-selector-button {
+            margin-right: 12px;
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            color: var(--text);
+            background: var(--surface);
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        #fileInput:disabled,
+        #fileInput:disabled::file-selector-button {
+            cursor: not-allowed;
+        }
+
+        .file-summary {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 8px 16px;
+            min-height: 24px;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        #fileName {
+            overflow-wrap: anywhere;
+        }
+
+        .progress-panel {
+            display: grid;
+            gap: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .progress-heading,
+        .progress-detail {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .progress-heading {
+            align-items: baseline;
+        }
+
+        .progress-label {
+            font-weight: 700;
+        }
+
+        #percentage {
+            color: var(--primary);
+            font-size: 1.1rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #progress {
+            width: 100%;
+            height: 12px;
+            overflow: hidden;
+            border: 0;
+            border-radius: 999px;
+            accent-color: var(--primary);
+            background: #e5eaf2;
+        }
+
+        #progress::-webkit-progress-bar {
+            border-radius: 999px;
+            background: #e5eaf2;
+        }
+
+        #progress::-webkit-progress-value {
+            border-radius: 999px;
+            background: var(--primary);
+        }
+
+        #progress::-moz-progress-bar {
+            border-radius: 999px;
+            background: var(--primary);
+        }
+
+        .progress-detail {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        #status {
+            min-height: 48px;
+            margin: 0;
+            padding: 13px 15px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-muted);
+            background: var(--surface-subtle);
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        #status[data-tone="info"] {
+            border-color: #bfdbfe;
+            color: #1e40af;
+            background: var(--primary-soft);
+        }
+
+        #status[data-tone="success"] {
+            border-color: #bbf7d0;
+            color: var(--success);
+            background: var(--success-soft);
+        }
+
+        #status[data-tone="warning"] {
+            border-color: #fde68a;
+            color: var(--warning);
+            background: var(--warning-soft);
+        }
+
+        #status[data-tone="error"] {
+            border-color: #fecaca;
+            color: var(--danger);
+            background: var(--danger-soft);
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: 10px;
+        }
+
+        .button {
+            min-height: 46px;
+            padding: 11px 18px;
+            border: 1px solid transparent;
+            border-radius: 11px;
+            cursor: pointer;
+            font-weight: 750;
+            transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+        }
+
+        .button:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .button:focus-visible,
+        #fileInput:focus-visible {
+            outline: 3px solid var(--focus);
+            outline-offset: 2px;
+        }
+
+        .button-primary {
+            color: #ffffff;
+            background: var(--primary);
+        }
+
+        .button-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        .button-secondary {
+            border-color: var(--border);
+            color: var(--text);
+            background: var(--surface);
+        }
+
+        .button-secondary:hover:not(:disabled) {
+            border-color: #aebcd0;
+            background: var(--surface-subtle);
+        }
+
+        .button:disabled {
+            border-color: #e2e8f0;
+            color: #94a3b8;
+            background: #f1f5f9;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .helper-text {
+            margin: -8px 0 0;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 580px) {
+            .page-shell {
+                padding: 18px 16px;
+            }
+
+            .upload-card {
+                border-radius: 18px;
+            }
+
+            .card-header,
+            .card-body {
+                padding-right: 22px;
+                padding-left: 22px;
+            }
+
+            .file-picker {
+                grid-template-columns: 1fr;
+            }
+
+            .file-icon {
+                display: none;
+            }
+
+            .file-summary,
+            .actions {
+                grid-template-columns: 1fr;
+            }
+
+            .button {
+                width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page-shell">
+        <section class="upload-card" id="uploadApp" th:data-upload-endpoint="@{/files}" data-upload-endpoint="/files">
+            <header class="card-header">
+                <p class="eyebrow">Tus resumable upload</p>
+                <h1>Upload file tanpa mulai dari awal</h1>
+                <p class="subtitle">
+                    Kirim file besar dengan aman. Jika koneksi terputus, upload dapat dilanjutkan dari progres terakhir.
+                </p>
+            </header>
+
+            <div class="card-body">
+                <div class="file-field">
+                    <label class="field-label" for="fileInput">Pilih file</label>
+                    <div class="file-picker">
+                        <span class="file-icon" aria-hidden="true">↑</span>
+                        <div class="file-control">
+                            <input type="file" id="fileInput">
+                        </div>
+                    </div>
+                    <div class="file-summary" aria-live="polite">
+                        <span id="fileName">Belum ada file dipilih</span>
+                        <span id="fileSize">—</span>
+                    </div>
+                </div>
+
+                <div class="progress-panel">
+                    <div class="progress-heading">
+                        <span class="progress-label">Progres upload</span>
+                        <span id="percentage">0%</span>
+                    </div>
+                    <progress id="progress" value="0" max="100" aria-label="Progres upload file">0%</progress>
+                    <div class="progress-detail">
+                        <span id="transferred">0 B dari 0 B</span>
+                        <span>Chunk 5 MiB</span>
+                    </div>
+                </div>
+
+                <p id="status" role="status" aria-live="polite" aria-atomic="true" data-tone="neutral">
+                    Pilih file untuk memulai upload.
+                </p>
+
+                <div class="actions">
+                    <button class="button button-primary" id="uploadButton" type="button" disabled>Mulai upload</button>
+                    <button class="button button-secondary" id="pauseButton" type="button" disabled>Jeda</button>
+                    <button class="button button-secondary" id="resumeButton" type="button" disabled>Lanjutkan</button>
+                </div>
+
+                <p class="helper-text">
+                    Progres upload yang belum selesai disimpan oleh browser agar file yang sama dapat dilanjutkan setelah halaman dimuat ulang.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/tus-js-client@4/dist/tus.min.js"></script>
+    <script defer src="/js/upload.js" th:src="@{/js/upload.js}"></script>
+</body>
+
+</html>
