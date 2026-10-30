@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: movies-info-service
+  mongodb:
+    host: localhost
+    port: 27017
+    database: movies_info
