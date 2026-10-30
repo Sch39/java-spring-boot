@@ -1,3 +1,13 @@
 spring:
   application:
     name: movies-review-service
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5433/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  sql:
+    init:
+      mode: always
+
+server:
+  port: 8081

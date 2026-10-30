@@ -10,3 +10,5 @@ spring:
       channel:
         review:
           target: static://localhost:9090
+server:
+  port: 8082
