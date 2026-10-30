@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/v1/movie-info")
@@ -27,7 +28,7 @@ public class MovieInfoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<MovieInfo> add(@RequestBody MovieInfo movieInfo) {
+    public Mono<MovieInfo> add(@Valid @RequestBody MovieInfo movieInfo) {
         return service.add(movieInfo);
     }
 
@@ -44,7 +45,7 @@ public class MovieInfoController {
     }
 
     @PutMapping("/{id}")
-    public Mono<ResponseEntity<MovieInfo>> update(@PathVariable String id, @RequestBody MovieInfo movieInfo) {
+    public Mono<ResponseEntity<MovieInfo>> update(@PathVariable String id, @Valid @RequestBody MovieInfo movieInfo) {
         return service.update(id, movieInfo)
                 .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
