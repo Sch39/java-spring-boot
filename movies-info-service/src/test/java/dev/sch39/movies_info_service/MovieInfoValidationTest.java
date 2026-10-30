@@ -22,6 +22,9 @@ class MovieInfoValidationTest {
     @MockitoBean
     private MovieInfoService service;
 
+    @MockitoBean
+    private MovieInfoReviewService reviewService;
+
     @Test
     void invalidBodyReturns400WithFieldMessages() {
         String body = client.post().uri("/v1/movie-info")

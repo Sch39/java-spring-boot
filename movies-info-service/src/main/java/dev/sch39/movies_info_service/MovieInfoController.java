@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,9 +22,11 @@ import jakarta.validation.Valid;
 public class MovieInfoController {
 
     private final MovieInfoService service;
+    private final MovieInfoReviewService reviewService;
 
-    public MovieInfoController(MovieInfoService service) {
+    public MovieInfoController(MovieInfoService service, MovieInfoReviewService reviewService) {
         this.service = service;
+        this.reviewService = reviewService;
     }
 
     @PostMapping
@@ -55,5 +58,13 @@ public class MovieInfoController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> delete(@PathVariable String id) {
         return service.delete(id);
+    }
+
+    @GetMapping("/{id}/with-reviews")
+    public Mono<ResponseEntity<MovieInfoReviewService.MovieWithReviews>> findWithReviews(@PathVariable String id,
+            @RequestParam long reviewMovieId) {
+        return reviewService.findWithReviews(id, reviewMovieId)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 }

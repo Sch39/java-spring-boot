@@ -5,3 +5,8 @@ spring:
     host: localhost
     port: 27017
     database: movies_info
+  grpc:
+    client:
+      channel:
+        review:
+          target: static://localhost:9090
