@@ -8,6 +8,7 @@ option java_package = "dev.sch39.movies_review_service.grpc";
 service ReviewService {
   rpc AddReview(AddReviewRequest) returns (ReviewReply);
   rpc ListReviews(ListReviewsRequest) returns (ListReviewsReply);
+  rpc StreamReviews(ListReviewsRequest) returns (stream ReviewReply);
 }
 
 message AddReviewRequest {

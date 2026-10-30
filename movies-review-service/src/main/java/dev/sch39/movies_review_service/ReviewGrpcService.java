@@ -12,6 +12,8 @@ import dev.sch39.movies_review_service.grpc.ListReviewsRequest;
 import dev.sch39.movies_review_service.grpc.ReviewReply;
 import dev.sch39.movies_review_service.grpc.ReviewServiceGrpc;
 import io.grpc.stub.StreamObserver;
+import java.util.NoSuchElementException;
+import reactor.core.publisher.Mono;
 
 @Service
 public class ReviewGrpcService extends ReviewServiceGrpc.ReviewServiceImplBase {
@@ -25,9 +27,18 @@ public class ReviewGrpcService extends ReviewServiceGrpc.ReviewServiceImplBase {
     @Override
     public void addReview(AddReviewRequest request, StreamObserver<ReviewReply> observer) {
         var review = new Review(null, request.getMovieInfoId(), request.getComment(), request.getRating());
-        template.insert(review)
+        GrpcReactiveBridge.respond(template.insert(review).map(ReviewGrpcService::toReply), observer);
+    }
+
+    @Override
+    public void streamReviews(ListReviewsRequest request, StreamObserver<ReviewReply> observer) {
+        var reviews = template.select(Review.class)
+                .matching(query(where("movieInfoId").is(request.getMovieInfoId())))
+                .all()
                 .map(ReviewGrpcService::toReply)
-                .subscribe(observer::onNext, observer::onError, observer::onCompleted);
+                .switchIfEmpty(Mono
+                        .error(new NoSuchElementException("no reviews for movieInfoId=" + request.getMovieInfoId())));
+        GrpcReactiveBridge.stream(reviews, observer);
     }
 
     @Override

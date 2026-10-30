@@ -17,6 +17,13 @@ import dev.sch39.movies_review_service.grpc.AddReviewRequest;
 import dev.sch39.movies_review_service.grpc.ListReviewsRequest;
 import dev.sch39.movies_review_service.grpc.ReviewServiceGrpc;
 
+import java.util.ArrayList;
+
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 @SpringBootTest(properties = "spring.sql.init.mode=always")
 @Testcontainers
 @AutoConfigureTestGrpcTransport
@@ -50,5 +57,21 @@ class ReviewGrpcServiceTest {
 
         System.out.println("movie42 count=" + reply.getReviewsCount());
         assertEquals(2, reply.getReviewsCount(), "reviews for movie 42");
+    }
+
+    @Test
+    void streamReviewsDeliversRowsAndMapsMissingMovieToNotFound() {
+        stub.addReview(AddReviewRequest.newBuilder().setMovieInfoId(77L).setComment("A").setRating(5.0).build());
+        stub.addReview(AddReviewRequest.newBuilder().setMovieInfoId(77L).setComment("B").setRating(6.0).build());
+
+        var streamed = new ArrayList<String>();
+        stub.streamReviews(ListReviewsRequest.newBuilder().setMovieInfoId(77L).build())
+                .forEachRemaining(reply -> streamed.add(reply.getComment()));
+        var error = assertThrows(StatusRuntimeException.class,
+                () -> stub.streamReviews(ListReviewsRequest.newBuilder().setMovieInfoId(999L).build()).hasNext());
+
+        System.out.println("streamed=" + streamed.size() + " missing=" + error.getStatus().getCode());
+        assertEquals(2, streamed.size(), "streamed reviews");
+        assertEquals(Status.Code.NOT_FOUND, error.getStatus().getCode(), "status code");
     }
 }
