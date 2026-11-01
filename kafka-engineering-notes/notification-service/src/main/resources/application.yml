@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: notification-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JacksonJsonDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: dev.sch39.notificationservice.OrderCreated
+    listener:
+      ack-mode: manual
+
+server:
+  port: 8082
+
+app:
+  topic:
+    orders: orders
+  listener:
+    id: notification
+  ack-enabled: true
