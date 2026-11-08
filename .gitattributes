@@ -1,0 +1,27 @@
+# Normalize line endings: LF in repo AND working tree (Windows git + WSL)
+* text=auto eol=lf
+
+# Windows-only scripts must stay CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Unix scripts must stay LF
+*.sh text eol=lf
+mvnw text eol=lf
+gradlew text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.jar binary
+*.war binary
+*.zip binary
+*.gz binary
+*.class binary
+*.woff binary
+*.woff2 binary
